@@ -301,9 +301,11 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    # Initialize the database and insert sample data
-    init_db()
-    insert_sample_data()
+    # Only initialize database and insert sample data in development
+    if os.environ.get('FLASK_ENV') == 'development':
+        init_db()
+        insert_sample_data()
     
-    # Run the app in debug mode
-    app.run(debug=True, port=5000)
+    # Run the app
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
