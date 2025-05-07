@@ -305,6 +305,7 @@ def logout():
     flash('Successfully logged out!', 'success')
     return redirect(url_for('home'))
 
+init_db()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
