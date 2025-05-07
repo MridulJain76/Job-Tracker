@@ -305,7 +305,8 @@ def logout():
     flash('Successfully logged out!', 'success')
     return redirect(url_for('home'))
 
+init_db()  # <-- This will run on every import, including with Gunicorn
+
 if __name__ == '__main__':
-    init_db()  # <-- Make sure this runs every time, even in production!
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
