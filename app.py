@@ -3,21 +3,28 @@ import sqlite3
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key')
+
+# Get database path from environment variable or use default
+DATABASE_PATH = os.environ.get('DATABASE_PATH', 'database.db')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+def get_db_connection():
+    return sqlite3.connect(DATABASE_PATH)
+
 # Initialize the database
 def init_db():
-    # Remove existing database file if it exists
-    if os.path.exists('database.db'):
-        os.remove('database.db')
+    # Only remove database in development
+    if os.environ.get('FLASK_ENV') == 'development' and os.path.exists(DATABASE_PATH):
+        os.remove(DATABASE_PATH)
         
-    conn = sqlite3.connect('database.db')
+    conn = get_db_connection()
     c = conn.cursor()
 
     # Create users table
@@ -53,7 +60,7 @@ def init_db():
 
 # Function to insert sample data (for testing)
 def insert_sample_data():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     # Insert sample user
@@ -78,7 +85,7 @@ def insert_sample_data():
 
 @login_manager.user_loader
 def load_user(user_id):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = c.fetchone()
@@ -107,13 +114,13 @@ def login():
             flash('Please enter both username and password', 'error')
             return render_template('login.html')
         
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         c = conn.cursor()
-        c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
+        c.execute('SELECT * FROM users WHERE username = ?', (username,))
         user = c.fetchone()
         conn.close()
         
-        if user:
+        if user and check_password_hash(user[3], password):  # user[3] is the hashed password
             user_obj = User(id=user[0], username=user[1], email=user[2])
             login_user(user_obj)
             flash('Successfully logged in!', 'success')
@@ -134,7 +141,7 @@ def register():
             flash('Please fill in all fields', 'error')
             return render_template('register.html')
         
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         c = conn.cursor()
         
         # Check if username already exists
@@ -151,8 +158,11 @@ def register():
             conn.close()
             return render_template('register.html')
         
+        # Hash the password before storing
+        hashed_password = generate_password_hash(password)
+        
         c.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-                 (username, email, password))
+                 (username, email, hashed_password))
         conn.commit()
         conn.close()
         
@@ -164,7 +174,7 @@ def register():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
     c.execute('''
         SELECT id, company, position, status, application_date, notes, created_at, updated_at 
@@ -205,7 +215,7 @@ def add_job():
             flash('Please fill in all required fields', 'error')
             return redirect(url_for('dashboard'))
         
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         c = conn.cursor()
         c.execute('''
             INSERT INTO jobs (user_id, company, position, status, application_date, notes)
@@ -223,7 +233,7 @@ def add_job():
 @app.route('/edit_job/<int:job_id>', methods=['GET', 'POST'])
 @login_required
 def edit_job(job_id):
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
     
     if request.method == 'POST':
@@ -271,7 +281,7 @@ def edit_job(job_id):
 @login_required
 def delete_job(job_id):
     try:
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         c = conn.cursor()
         c.execute('DELETE FROM jobs WHERE id = ? AND user_id = ?', (job_id, current_user.id))
         conn.commit()
