@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Job - Job Tracker{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 style="text-align: center; margin-bottom: 2rem;">Edit Job Application</h1>
+    <form method="POST" action="">
+        <div class="form-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" class="form-control" value="{{ job.company }}" required>
+        </div>
+        <div class="form-group">
+            <label for="position">Position</label>
+            <input type="text" id="position" name="position" class="form-control" value="{{ job.position }}" required>
+        </div>
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status" class="form-control" required>
+                <option value="Applied" {% if job.status == 'Applied' %}selected{% endif %}>Applied</option>
+                <option value="Interviewed" {% if job.status == 'Interviewed' %}selected{% endif %}>Interviewed</option>
+                <option value="Offered" {% if job.status == 'Offered' %}selected{% endif %}>Offered</option>
+                <option value="Rejected" {% if job.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="application_date">Application Date</label>
+            <input type="date" id="application_date" name="application_date" class="form-control" value="{{ job.application_date }}" required>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" class="form-control" rows="3">{{ job.notes }}</textarea>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-danger" style="text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

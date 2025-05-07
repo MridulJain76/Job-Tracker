@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Job Tracker{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1 style="text-align: center; margin-bottom: 2rem;">Login</h1>
+    
+    <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" class="btn">Login</button>
+        </div>
+    </form>
+    
+    <p style="text-align: center; margin-top: 1.5rem;">
+        Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--primary);">Register here</a>
+    </p>
+</div>
+{% endblock %}

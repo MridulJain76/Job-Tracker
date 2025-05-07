@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Add Job</h2>
+<form method="POST">
+    <input name="company" placeholder="Company" required>
+    <input name="position" placeholder="Position" required>
+    <input name="status" placeholder="Status (e.g., Applied)" required>
+    <button type="submit">Save</button>
+</form>
+{% endblock %}
