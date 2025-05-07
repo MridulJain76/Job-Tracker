@@ -20,6 +20,11 @@ def get_db_connection():
 
 # Initialize the database
 def init_db():
+    print("Running init_db()")
+    print("Database path:", DATABASE_PATH)
+    # Only remove database in development
+    if os.environ.get('FLASK_ENV') == 'development' and os.path.exists(DATABASE_PATH):
+        os.remove(DATABASE_PATH)
     # Only remove database in development
     if os.environ.get('FLASK_ENV') == 'development' and os.path.exists(DATABASE_PATH):
         os.remove(DATABASE_PATH)
